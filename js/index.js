@@ -61,14 +61,13 @@ window.onload = function(){
   /************************
     init
   *************************/
-  canvas  = document.getElementById("mycanvas");
+  canvas = document.getElementById("mycanvas");
   if (canvas.getContext){
     ctx = canvas.getContext('2d');
     var imageObj = new Image();
     // imageObj.src = 'img/Rattylines.jpg';
     // imageObj.src = 'img/flicka20-sailplan.gif';
     imageObj.src = 'img/18-foot-sharpie.jpg';
-
     // ctx.translate(200, 200);
     draw();
   } else {
