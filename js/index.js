@@ -6,6 +6,9 @@ const NODE_COLOR = '#28a86b';
 const EDGE_COLOR = '#2244cc';
 const NODE_SIZE = 4;
 
+const CANVAS_WIDTH = 1000;
+const CANVAS_HEIGHT = 400;
+
 window.onload = function(){
   // point be moving
   let movPoint = null;
@@ -22,16 +25,94 @@ window.onload = function(){
   // ctx.fillStyle = NODE_COLOR;
   // ctx.strokeStyle = EDGE_COLOR;
 
-  /************************
-    data
-  *************************/
-  let data = {
+  // Water line.
+  let water_line = {
+    position: 100,
+    draw(){
+      ctx.lineWidth=2;
+      ctx.strokeStyle = 'lightblue';      
+      ctx.beginPath();
+      ctx.moveTo(0 ,this.position);
+      ctx.lineTo(CANVAS_WIDTH, this.position);
+      ctx.stroke();
+    }
   };
 
+  // Bottom.
+  let hull_bottom = {
+    start: {
+      x: 20,
+      y: 110
+    },
+    mid: {
+      x: 600,
+      y: 10
+    },
+    end: {
+      x: 950,
+      y: 120
+    },
+    draw(){
+      ctx.lineWidth=3;
+      ctx.strokeStyle = 'blue';      
+      ctx.beginPath();
+      ctx.moveTo(this.start.x, this.start.y);
+      ctx.quadraticCurveTo(this.mid.x, this.mid.y, this.end.x, this.end.y);
+      ctx.stroke();
+    }
+  };
 
-  /************************
-    model
-  *************************/
+  // Steam
+  let hull_steam = {
+    top: {
+      x: 10,
+      y: 200
+    },
+    draw(){
+      ctx.lineWidth=3;
+      ctx.strokeStyle = 'blue';      
+      ctx.beginPath();
+      ctx.moveTo(this.top.x, this.top.y);
+      ctx.lineTo(hull_bottom.start.x, hull_bottom.start.y);
+      ctx.stroke();
+    }
+  }
+
+  // Stern
+  let hull_stern = {
+    top: {
+      x: 990,
+      y: 150
+    },
+    draw(){
+      ctx.lineWidth=3;
+      ctx.strokeStyle = 'blue';      
+      ctx.beginPath();
+      ctx.moveTo(hull_bottom.end.x, hull_bottom.end.y);
+      ctx.lineTo(this.top.x, this.top.y);
+      ctx.stroke();
+    }
+  }
+
+  // Test coodination system.
+  function testCoordinateSystem(){
+    ctx.lineWidth=2;
+    ctx.strokeStyle = 'blue';
+    // Line from origin.
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(200, 200);
+    ctx.stroke();
+    // Circle at origin.
+    ctx.beginPath();
+    ctx.arc(0, 0, 10, rad(0), rad(360));
+    ctx.stroke();
+    // Circle x:100 and y:50
+    ctx.beginPath();
+    ctx.arc(100, 50, 4, rad(0), rad(360));
+    ctx.stroke();    
+  }
+
   let sheer = {
     curve: new Bezier(100,50,0, 400,200,0, 800,50,0),
     // call when point is changed
@@ -46,7 +127,20 @@ window.onload = function(){
 
   function draw(){
     // ctx.clearRect(0, 0, 1100, 500);
-    ctx.clearRect(0, 0, 1000, 400);
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    // Origin at rigth bottom.
+    ctx.translate(CANVAS_WIDTH, CANVAS_HEIGHT)
+    // x rise up, y rise left.
+    ctx.rotate(rad(180));
+    // testCoordinateSystem();   
+    water_line.draw();
+    hull_steam.draw();
+    hull_bottom.draw();
+    hull_stern.draw();
+
+
+    // sheer.draw();
+
     // Draw image.
     // ctx.drawImage(imageObj, 0, 0);
     // ctx.drawImage(imageObj, 0, 0, 780, 651);
@@ -54,7 +148,6 @@ window.onload = function(){
     // ctx.drawImage(imageObj, 0, -1100); // flicka20
     // ctx.drawImage(imageObj, 0, 0, 1440, 2560); // 14-foot-sharpie (720x1280)
     // ctx.drawImage(imageObj, 0, 0, 1280, 720); // 14-foot-sharpie (1280x720x)
-    sheer.draw();
   }
 
 

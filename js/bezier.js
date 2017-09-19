@@ -1,6 +1,4 @@
 var Bezier = function(t) {
-ctrl + l
-selecting an entire line + cr
     function n(i) {
         if (r[i]) return r[i].exports;
         var e = r[i] = {
