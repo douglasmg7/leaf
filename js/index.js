@@ -9,6 +9,35 @@ const NODE_SIZE = 4;
 const CANVAS_WIDTH = 1000;
 const CANVAS_HEIGHT = 400;
 
+const WATER_LINE_HEIGHT = 100;
+const MARGIN_RIGHT = 20;
+
+let boat = {
+  loa: 900,
+  steam: {
+    // Steam top - distance from water line.
+    freeBoard: 80,
+    // Steam bottom - height over water line.
+    heightOverWL: 15,
+    // Angle (graus) with vertical.
+    angle: 12
+  },
+  stern: {
+    // Stern top - distance from water line.
+    freeBoard: 80,
+    // Stern bottom - height over water line.
+    heightOverWL: 5,
+    // Angle (graus) with vertical.
+    angle: 30
+  },
+  bottom: {
+    bezierMidPoint: {
+      x: 500,
+      y: -50
+    }
+  }
+}
+
 window.onload = function(){
   // point be moving
   let movPoint = null;
@@ -27,30 +56,85 @@ window.onload = function(){
 
   // Water line.
   let water_line = {
-    position: 100,
     draw(){
       ctx.lineWidth=2;
       ctx.strokeStyle = 'lightblue';      
       ctx.beginPath();
-      ctx.moveTo(0 ,this.position);
-      ctx.lineTo(CANVAS_WIDTH, this.position);
+      ctx.moveTo(0 ,0);
+      ctx.lineTo(CANVAS_WIDTH, 0);
       ctx.stroke();
     }
   };
 
+  // Steam.
+  let hull_steam = {
+    // Steam top - distance from water line.
+    freeBoard: boat.steam.freeBoard,
+    // Steam bottom - height over water line.
+    heightOverWL: boat.steam.heightOverWL,
+    // Angle (graus) with vertical.
+    angle: boat.steam.angle
+  };
+  hull_steam.top = {
+      x: 0,
+      y: hull_steam.freeBoard
+  };
+  hull_steam.bottom = {
+    // x = y * tanθ.
+    x: (hull_steam.freeBoard - hull_steam.heightOverWL) * Math.tan(rad(hull_steam.angle)),
+    y: hull_steam.heightOverWL
+  };
+  hull_steam.draw = function() {
+    ctx.lineWidth=3;
+    ctx.strokeStyle = 'blue';      
+    ctx.beginPath();
+    ctx.moveTo(this.top.x, this.top.y);
+    ctx.lineTo(this.bottom.x, this.bottom.y);
+    ctx.stroke();
+  }
+
+  // Steam
+  let hull_stern = {
+    // Length Over All.
+    loa: 900,
+    // Steam top - distance from water line.
+    freeBoard: 80,
+    // Steam bottom - height over water line.
+    heightOverWL: 5,
+    // Angle (graus) with vertical.
+    angle: 30
+  };
+  hull_stern.top = {
+      x: hull_stern.loa,
+      y: hull_stern.freeBoard
+  };
+  hull_stern.bottom = {
+    // x = loa - (y * tanθ).
+    x: hull_stern.loa - ((hull_stern.freeBoard - hull_stern.heightOverWL) * Math.tan(rad(hull_stern.angle))),
+    y: hull_stern.heightOverWL
+  };
+  hull_stern.draw = function() {
+    ctx.lineWidth=3;
+    ctx.strokeStyle = 'blue';      
+    ctx.beginPath();
+    ctx.moveTo(this.bottom.x, this.bottom.y);
+    ctx.lineTo(this.top.x, this.top.y);
+    ctx.stroke();
+  }
+
   // Bottom.
   let hull_bottom = {
     start: {
-      x: 20,
-      y: 110
+      x: hull_steam.bottom.x,
+      y: hull_steam.bottom.y
     },
     mid: {
-      x: 600,
-      y: 10
+      x: 500,
+      y: -50
     },
     end: {
-      x: 950,
-      y: 120
+      x: hull_stern.bottom.x,
+      y: hull_stern.bottom.y
     },
     draw(){
       ctx.lineWidth=3;
@@ -61,38 +145,6 @@ window.onload = function(){
       ctx.stroke();
     }
   };
-
-  // Steam
-  let hull_steam = {
-    top: {
-      x: 10,
-      y: 200
-    },
-    draw(){
-      ctx.lineWidth=3;
-      ctx.strokeStyle = 'blue';      
-      ctx.beginPath();
-      ctx.moveTo(this.top.x, this.top.y);
-      ctx.lineTo(hull_bottom.start.x, hull_bottom.start.y);
-      ctx.stroke();
-    }
-  }
-
-  // Stern
-  let hull_stern = {
-    top: {
-      x: 990,
-      y: 150
-    },
-    draw(){
-      ctx.lineWidth=3;
-      ctx.strokeStyle = 'blue';      
-      ctx.beginPath();
-      ctx.moveTo(hull_bottom.end.x, hull_bottom.end.y);
-      ctx.lineTo(this.top.x, this.top.y);
-      ctx.stroke();
-    }
-  }
 
   // Test coodination system.
   function testCoordinateSystem(){
@@ -129,7 +181,7 @@ window.onload = function(){
     // ctx.clearRect(0, 0, 1100, 500);
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     // Origin at rigth bottom.
-    ctx.translate(CANVAS_WIDTH, CANVAS_HEIGHT)
+    ctx.translate(CANVAS_WIDTH - MARGIN_RIGHT, CANVAS_HEIGHT - WATER_LINE_HEIGHT)
     // x rise up, y rise left.
     ctx.rotate(rad(180));
     // testCoordinateSystem();   
