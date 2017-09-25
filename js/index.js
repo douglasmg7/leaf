@@ -13,27 +13,42 @@ const WATER_LINE_HEIGHT = 100;
 const MARGIN_RIGHT = 20;
 
 let boat = {
+  // Length Over All (mm).
   loa: 900,
+  // Steam.
   steam: {
-    // Steam top - distance from water line.
-    freeBoard: 80,
-    // Steam bottom - height over water line.
-    heightOverWL: 15,
-    // Angle (graus) with vertical.
+    // Steam top - distance from water line (mm).
+    freeBoard: 90,
+    // Steam bottom - height over water line (mm).
+    heightOverWL: -2,
+    // Angle (graus) with vertical (mm).
     angle: 12
   },
+  // Stern.
   stern: {
-    // Stern top - distance from water line.
+    // Stern top - distance from water line (mm).
     freeBoard: 80,
-    // Stern bottom - height over water line.
+    // Stern bottom - height over water line (mm).
     heightOverWL: 5,
-    // Angle (graus) with vertical.
-    angle: 30
+    // Angle (graus) with vertical (mm).
+    angle: 9
   },
+  // Sheer
+  sheer: {
+    bezierMidPoint: {
+      // Loa (%).
+      xPercent: .60,
+      // (mm).
+      y: 30
+    }
+  },  
+  // Bottom.
   bottom: {
     bezierMidPoint: {
-      x: 500,
-      y: -50
+      // Loa (%).
+      xPercent: .65,
+      // (mm).
+      y: 30
     }
   }
 }
@@ -60,7 +75,7 @@ window.onload = function(){
       ctx.lineWidth=2;
       ctx.strokeStyle = 'lightblue';      
       ctx.beginPath();
-      ctx.moveTo(0 ,0);
+      ctx.moveTo(-MARGIN_RIGHT ,0);
       ctx.lineTo(CANVAS_WIDTH, 0);
       ctx.stroke();
     }
@@ -68,59 +83,45 @@ window.onload = function(){
 
   // Steam.
   let hull_steam = {
-    // Steam top - distance from water line.
-    freeBoard: boat.steam.freeBoard,
-    // Steam bottom - height over water line.
-    heightOverWL: boat.steam.heightOverWL,
-    // Angle (graus) with vertical.
-    angle: boat.steam.angle
+    top: {
+        x: 0,
+        y: boat.steam.freeBoard
+    },
+    bottom: {
+      // x = y * tanθ.
+      x: (boat.steam.freeBoard - boat.steam.heightOverWL) * Math.tan(rad(boat.steam.angle)),
+      y: boat.steam.heightOverWL
+    },
+    draw() {
+      ctx.lineWidth=3;
+      ctx.strokeStyle = 'blue';      
+      ctx.beginPath();
+      ctx.moveTo(this.top.x, this.top.y);
+      ctx.lineTo(this.bottom.x, this.bottom.y);
+      ctx.stroke();
+    }    
   };
-  hull_steam.top = {
-      x: 0,
-      y: hull_steam.freeBoard
-  };
-  hull_steam.bottom = {
-    // x = y * tanθ.
-    x: (hull_steam.freeBoard - hull_steam.heightOverWL) * Math.tan(rad(hull_steam.angle)),
-    y: hull_steam.heightOverWL
-  };
-  hull_steam.draw = function() {
-    ctx.lineWidth=3;
-    ctx.strokeStyle = 'blue';      
-    ctx.beginPath();
-    ctx.moveTo(this.top.x, this.top.y);
-    ctx.lineTo(this.bottom.x, this.bottom.y);
-    ctx.stroke();
-  }
 
   // Steam
   let hull_stern = {
-    // Length Over All.
-    loa: 900,
-    // Steam top - distance from water line.
-    freeBoard: 80,
-    // Steam bottom - height over water line.
-    heightOverWL: 5,
-    // Angle (graus) with vertical.
-    angle: 30
+    top: {
+        x: boat.loa,
+        y: boat.stern.freeBoard
+    },
+    bottom: {
+      // x = loa - (y * tanθ).
+      x: boat.loa - ((boat.stern.freeBoard - boat.stern.heightOverWL) * Math.tan(rad(boat.stern.angle))),
+      y: boat.stern.heightOverWL
+    },
+    draw() {
+      ctx.lineWidth=3;
+      ctx.strokeStyle = 'blue';      
+      ctx.beginPath();
+      ctx.moveTo(this.bottom.x, this.bottom.y);
+      ctx.lineTo(this.top.x, this.top.y);
+      ctx.stroke();
+    }
   };
-  hull_stern.top = {
-      x: hull_stern.loa,
-      y: hull_stern.freeBoard
-  };
-  hull_stern.bottom = {
-    // x = loa - (y * tanθ).
-    x: hull_stern.loa - ((hull_stern.freeBoard - hull_stern.heightOverWL) * Math.tan(rad(hull_stern.angle))),
-    y: hull_stern.heightOverWL
-  };
-  hull_stern.draw = function() {
-    ctx.lineWidth=3;
-    ctx.strokeStyle = 'blue';      
-    ctx.beginPath();
-    ctx.moveTo(this.bottom.x, this.bottom.y);
-    ctx.lineTo(this.top.x, this.top.y);
-    ctx.stroke();
-  }
 
   // Bottom.
   let hull_bottom = {
@@ -129,12 +130,36 @@ window.onload = function(){
       y: hull_steam.bottom.y
     },
     mid: {
-      x: 500,
-      y: -50
+      x: ((hull_stern.bottom.x - hull_steam.bottom.x) * boat.bottom.bezierMidPoint.xPercent) + hull_steam.bottom.x,
+      y: -Math.abs(boat.bottom.bezierMidPoint.y)
     },
     end: {
       x: hull_stern.bottom.x,
       y: hull_stern.bottom.y
+    },
+    draw(){
+      ctx.lineWidth=3;
+      ctx.strokeStyle = 'blue';      
+      ctx.beginPath();
+      ctx.moveTo(this.start.x, this.start.y);
+      ctx.quadraticCurveTo(this.mid.x, this.mid.y, this.end.x, this.end.y);
+      ctx.stroke();
+    }
+  };
+
+  // Sheer.
+  let hull_sheer = {
+    start: {
+      x: hull_steam.top.x,
+      y: hull_steam.top.y
+    },
+    mid: {
+      x: ((hull_stern.top.x - hull_steam.top.x) * boat.sheer.bezierMidPoint.xPercent) + hull_steam.top.x,
+      y: boat.sheer.bezierMidPoint.y
+    },
+    end: {
+      x: hull_stern.top.x,
+      y: hull_stern.top.y
     },
     draw(){
       ctx.lineWidth=3;
@@ -189,6 +214,7 @@ window.onload = function(){
     hull_steam.draw();
     hull_bottom.draw();
     hull_stern.draw();
+    hull_sheer.draw();
 
 
     // sheer.draw();
