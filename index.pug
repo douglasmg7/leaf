@@ -7,7 +7,55 @@ html
     script(src='js/index.js')
     link(rel='stylesheet', href='main.css')
   body
-    canvas#mycanvas(width='1000' height='400')
+    .container
+      canvas#mycanvas(width='1000' height='400')
+      .menu
+        //- Steam.
+        .menu-item
+          h3 Steam
+          p Free Board (mm)
+          input#steam-freeboard(type='text' size="5")
+          p Height Over WL (mm)
+          input#steam-height(type='text' value='5' size="5")
+          p Angle (graus)
+          input#steam-angle(type='text' value='5' size="5")
+        //- Stern.
+        .menu-item
+          h3 Stern
+          p Free Board (mm)
+          input#stern-freeboard(type='text' size="5")          
+          p Height Over WL (mm)
+          input#sterm-height(type='text' size="5")
+          p Angle (graus)
+          input#stern-angle(type='text' value='5' size="5")
+        //- Bottom.
+        .menu-item
+          h3 Bottom
+          p Mid x (%)
+          input(type='text' size="5")          
+          p Mid y (mm)
+          input(type='text' size="5")
   script.
+    //- Livereload.
     document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
+  style.
+    .container {
+      padding: 4px;
+    }
+    canvas {
+      border:1px solid black;
+      display: inline;
+    }
+    .menu {
+      max-width: 1004px;
+    }
+    .menu-item {
+      padding: .7em .7em .7em .7em;
+      display: inline-block;
+      border: 1px solid black;
+    }
+    .menu-item > h3 {
+      font-weight: bold;
+    }
+
 

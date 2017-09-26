@@ -7,9 +7,9 @@ const EDGE_COLOR = '#2244cc';
 const NODE_SIZE = 4;
 
 const CANVAS_WIDTH = 1000;
-const CANVAS_HEIGHT = 400;
+const CANVAS_HEIGHT = 300;
 
-const WATER_LINE_HEIGHT = 100;
+const WATER_LINE_HEIGHT = 20;
 const MARGIN_RIGHT = 20;
 
 let boat = {
@@ -66,10 +66,7 @@ window.onload = function(){
   let canvas = null;
   let ctx = null;
 
-  // ctx.fillStyle = NODE_COLOR;
-  // ctx.strokeStyle = EDGE_COLOR;
-
-  // Water line.
+    // Water line.
   let water_line = {
     draw(){
       ctx.lineWidth=2;
@@ -81,17 +78,32 @@ window.onload = function(){
     }
   };
 
+  // Update input values.
+  let elemSteamFreeboard = document.getElementById('steam-freeboard');
+  elemSteamFreeboard.value = boat.steam.freeBoard;
+  elemSteamFreeboard.addEventListener('change', function(target){
+    boat.steam.freeBoard = this.value;
+    console.log(boat.steam.freeBoard);
+    updateBoatData();
+    draw();
+  });
+
+  // ctx.fillStyle = NODE_COLOR;
+  // ctx.strokeStyle = EDGE_COLOR;
+
   // Steam.
   let hull_steam = {
-    top: {
-        x: 0,
-        y: boat.steam.freeBoard
-    },
-    bottom: {
-      // x = y * tanθ.
-      x: (boat.steam.freeBoard - boat.steam.heightOverWL) * Math.tan(rad(boat.steam.angle)),
-      y: boat.steam.heightOverWL
-    },
+    // top: {
+    //     x: 0,
+    //     y: boat.steam.freeBoard
+    // },
+    // bottom: {
+    //   // x = y * tanθ.
+    //   x: (boat.steam.freeBoard - boat.steam.heightOverWL) * Math.tan(rad(boat.steam.angle)),
+    //   y: boat.steam.heightOverWL
+    // },
+    top: {},
+    bottom: {},
     draw() {
       ctx.lineWidth=3;
       ctx.strokeStyle = 'blue';      
@@ -104,15 +116,17 @@ window.onload = function(){
 
   // Steam
   let hull_stern = {
-    top: {
-        x: boat.loa,
-        y: boat.stern.freeBoard
-    },
-    bottom: {
-      // x = loa - (y * tanθ).
-      x: boat.loa - ((boat.stern.freeBoard - boat.stern.heightOverWL) * Math.tan(rad(boat.stern.angle))),
-      y: boat.stern.heightOverWL
-    },
+    // top: {
+    //     x: boat.loa,
+    //     y: boat.stern.freeBoard
+    // },
+    // bottom: {
+    //   // x = loa - (y * tanθ).
+    //   x: boat.loa - ((boat.stern.freeBoard - boat.stern.heightOverWL) * Math.tan(rad(boat.stern.angle))),
+    //   y: boat.stern.heightOverWL
+    // },
+    top: {},
+    bottom: {},
     draw() {
       ctx.lineWidth=3;
       ctx.strokeStyle = 'blue';      
@@ -125,18 +139,57 @@ window.onload = function(){
 
   // Bottom.
   let hull_bottom = {
-    start: {
-      x: hull_steam.bottom.x,
-      y: hull_steam.bottom.y
-    },
-    mid: {
-      x: ((hull_stern.bottom.x - hull_steam.bottom.x) * boat.bottom.bezierMidPoint.xPercent) + hull_steam.bottom.x,
-      y: -Math.abs(boat.bottom.bezierMidPoint.y)
-    },
-    end: {
-      x: hull_stern.bottom.x,
-      y: hull_stern.bottom.y
-    },
+    // start: {
+    //   x: hull_steam.bottom.x,
+    //   y: hull_steam.bottom.y
+    // },
+    // mid: {
+    //   x: ((hull_stern.bottom.x - hull_steam.bottom.x) * boat.bottom.bezierMidPoint.xPercent) + hull_steam.bottom.x,
+    //   y: -Math.abs(boat.bottom.bezierMidPoint.y)
+    // },
+    // end: {
+    //   x: hull_stern.bottom.x,
+    //   y: hull_stern.bottom.y
+    // },
+    start: {},
+    mid: {},
+    end: {},
+    draw(){
+      ctx.lineWidth=3;
+      ctx.strokeStyle = 'blue';      
+      ctx.beginPath();
+      ctx.moveTo(this.start.x, this.start.y);
+      ctx.quadraticCurveTo(this.mid.x, this.mid.y, this.end.x, this.end.y);
+      ctx.stroke();
+      // Draw min line.
+      ctx.lineWidth=1;
+      ctx.strokeStyle = 'red';        
+      let curve = new Bezier(this.start.x,this.start.y,0, this.mid.x,this.mid.y,0, this.end.x,this.end.y,0);
+      // console.log(curve.bbox().y.min);
+      ctx.beginPath();
+      ctx.moveTo(-MARGIN_RIGHT, curve.bbox().y.min);
+      ctx.lineTo(CANVAS_WIDTH, curve.bbox().y.min)
+      ctx.stroke();
+    }
+  };
+
+  // Sheer.
+  let hull_sheer = {
+    // start: {
+    //   x: hull_steam.top.x,
+    //   y: hull_steam.top.y
+    // },
+    // mid: {
+    //   x: ((hull_stern.top.x - hull_steam.top.x) * boat.sheer.bezierMidPoint.xPercent) + hull_steam.top.x,
+    //   y: boat.sheer.bezierMidPoint.y
+    // },
+    // end: {
+    //   x: hull_stern.top.x,
+    //   y: hull_stern.top.y
+    // },
+    start: {},
+    mid: {},
+    end: {},
     draw(){
       ctx.lineWidth=3;
       ctx.strokeStyle = 'blue';      
@@ -147,29 +200,37 @@ window.onload = function(){
     }
   };
 
-  // Sheer.
-  let hull_sheer = {
-    start: {
-      x: hull_steam.top.x,
-      y: hull_steam.top.y
-    },
-    mid: {
-      x: ((hull_stern.top.x - hull_steam.top.x) * boat.sheer.bezierMidPoint.xPercent) + hull_steam.top.x,
-      y: boat.sheer.bezierMidPoint.y
-    },
-    end: {
-      x: hull_stern.top.x,
-      y: hull_stern.top.y
-    },
-    draw(){
-      ctx.lineWidth=3;
-      ctx.strokeStyle = 'blue';      
-      ctx.beginPath();
-      ctx.moveTo(this.start.x, this.start.y);
-      ctx.quadraticCurveTo(this.mid.x, this.mid.y, this.end.x, this.end.y);
-      ctx.stroke();
-    }
-  };
+  // Update boat data.
+  function updateBoatData() {
+    // Steam.
+    hull_steam.top.x = 0;
+    hull_steam.top.y = boat.steam.freeBoard;
+    hull_steam.bottom.x = (boat.steam.freeBoard - boat.steam.heightOverWL) * Math.tan(rad(boat.steam.angle));
+    hull_steam.bottom.y = boat.steam.heightOverWL;
+    // Stern.
+    hull_stern.top.x = boat.loa;
+    hull_stern.top.y = boat.stern.freeBoard;
+    hull_stern.bottom.x = boat.loa - ((boat.stern.freeBoard - boat.stern.heightOverWL) * Math.tan(rad(boat.stern.angle)));
+    hull_stern.bottom.y = boat.stern.heightOverWL;
+    // Bottom.
+    hull_bottom.start.x = hull_steam.bottom.x;
+    hull_bottom.start.y = hull_steam.bottom.y;
+    hull_bottom.mid.x = ((hull_stern.bottom.x - hull_steam.bottom.x) * boat.bottom.bezierMidPoint.xPercent) + hull_steam.bottom.x;
+    hull_bottom.mid.y = -Math.abs(boat.bottom.bezierMidPoint.y);
+    hull_bottom.end.x = hull_stern.bottom.x;
+    hull_bottom.end.y = hull_stern.bottom.y;
+    // sheer.
+    hull_sheer.start.x = hull_steam.top.x;
+    hull_sheer.start.y = hull_steam.top.y;
+    hull_sheer.mid.x = ((hull_stern.top.x - hull_steam.top.x) * boat.sheer.bezierMidPoint.xPercent) + hull_steam.top.x;
+    hull_sheer.mid.y = boat.sheer.bezierMidPoint.y;
+    hull_sheer.end.x = hull_stern.top.x;
+    hull_sheer.end.y = hull_stern.top.y;
+  }
+
+  // Update boat data.
+  updateBoatData();
+
 
   // Test coodination system.
   function testCoordinateSystem(){
@@ -203,13 +264,13 @@ window.onload = function(){
   };
 
   function draw(){
-    // ctx.clearRect(0, 0, 1100, 500);
-    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    // Origin at rigth bottom.
-    ctx.translate(CANVAS_WIDTH - MARGIN_RIGHT, CANVAS_HEIGHT - WATER_LINE_HEIGHT)
-    // x rise up, y rise left.
-    ctx.rotate(rad(180));
-    // testCoordinateSystem();   
+    // // ctx.clearRect(0, 0, 1100, 500);
+    // ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    // // Origin at rigth bottom.
+    // ctx.translate(CANVAS_WIDTH - MARGIN_RIGHT, CANVAS_HEIGHT - WATER_LINE_HEIGHT)
+    // // x rise up, y rise left.
+    // ctx.rotate(rad(180));
+    // // testCoordinateSystem();   
     water_line.draw();
     hull_steam.draw();
     hull_bottom.draw();
@@ -239,7 +300,14 @@ window.onload = function(){
     // imageObj.src = 'img/Rattylines.jpg';
     // imageObj.src = 'img/flicka20-sailplan.gif';
     imageObj.src = 'img/18-foot-sharpie.jpg';
-    // ctx.translate(200, 200);
+    // Origin at rigth bottom.
+    ctx.translate(CANVAS_WIDTH - MARGIN_RIGHT, CANVAS_HEIGHT - WATER_LINE_HEIGHT)
+    // x rise up, y rise left.
+    ctx.rotate(rad(180));
+    // Clear.
+    // ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.clearRect(-1000, -1000, 1000, 1000);
+    // testCoordinateSystem();      
     draw();
   } else {
     alert('Browser not support canvas.');

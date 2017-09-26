@@ -8,7 +8,59 @@
     <link rel="stylesheet" href="main.css">
   </head>
   <body>
-    <canvas id="mycanvas" width="1000" height="400"></canvas>
+    <div class="container">
+      <canvas id="mycanvas" width="1000" height="400"></canvas>
+      <div class="menu">
+        <div class="menu-item">
+          <h3>Steam</h3>
+          <p>Free Board (mm)</p>
+          <input id="steam-freeboard" type="text" size="5">
+          <p>Height Over WL (mm)</p>
+          <input id="steam-height" type="text" value="5" size="5">
+          <p>Angle (graus)</p>
+          <input id="steam-angle" type="text" value="5" size="5">
+        </div>
+        <div class="menu-item">
+          <h3>Stern</h3>
+          <p>Free Board (mm)</p>
+          <input id="stern-freeboard" type="text" size="5">
+          <p>Height Over WL (mm)</p>
+          <input id="sterm-height" type="text" size="5">
+          <p>Angle (graus)</p>
+          <input id="stern-angle" type="text" value="5" size="5">
+        </div>
+        <div class="menu-item">
+          <h3>Bottom</h3>
+          <p>Mid x (%)</p>
+          <input type="text" size="5">
+          <p>Mid y (mm)</p>
+          <input type="text" size="5">
+        </div>
+      </div>
+    </div>
   </body>
-  <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
+  <script>
+    //- Livereload.
+    document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
+  </script>
+  <style>
+    .container {
+      padding: 4px;
+    }
+    canvas {
+      border:1px solid black;
+      display: inline;
+    }
+    .menu {
+      max-width: 1004px;
+    }
+    .menu-item {
+      padding: .7em .7em .7em .7em;
+      display: inline-block;
+      border: 1px solid black;
+    }
+    .menu-item > h3 {
+      font-weight: bold;
+    }
+  </style>
 </html>
